@@ -4,7 +4,7 @@
     This is a command line utility that takes iteratively
 	goes through all data in an instance and stores it in the local file
 	system as JSON payload files that may be loaded into another instance
-	later using the corresponding upload-instance-data.py utility.
+	later using the corresponding restore-instance-data.py utility.
     
     Example:
     Arguments are described via the -H command
