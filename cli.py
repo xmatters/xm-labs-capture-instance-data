@@ -253,7 +253,7 @@ USAGE
             config.log_filename = (
                 config.out_directory + config.dir_sep + config.base_name +
                 '.' + config.instance_type + '.' + config.log_filename + 
-                config.time_str + '.log')
+                '.' + config.time_str + '.log')
         config.sites_filename = (
             config.out_directory + config.dir_sep + config.base_name + '.' +
             config.instance_type + '.sites.' + config.time_str + '.json')

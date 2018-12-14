@@ -28,7 +28,7 @@ PROFILE = 0
     Defaults are set from configuration file via processArgs()
 """
 program_name = os.path.basename(sys.argv[0])
-time_str = time.strftime("-%Y%m%d-%H%M")
+time_str = time.strftime("%Y%m%d-%H%M")
 page_size = 1000
 xmod_url = None
 out_directory = None
