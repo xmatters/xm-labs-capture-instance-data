@@ -79,7 +79,7 @@ def _process_sites():
 
     while True:
 
-        # Get the audit records
+        # Get the site records
         response = requests.get(url, auth=config.basic_auth)
         if response.status_code not in [200, 404]:
             _log_xm_error(url, response)
@@ -107,33 +107,148 @@ def _process_sites():
     sites_file.write(']')
     sites_file.close()
 
-def _process_users():
+def _get_user_devices(user_id: str, target_name: str):
+    """Return a User's Devices
+
+    Retrieves the Device records from xMatters for the specified User and
+    returns them as a list.
+
+    Args:
+        user_id (str): The User's UUID
+        target_name (str): The User's targetName field
+
+    Return:
+        device_list (list): List of dictionaries of the User's devices.
+    """
+    # Initialize conditions
+    device_list = []
+    total_devices = 0
+    url = config.xmod_url + '/api/xm/1/people/' + user_id + '/devices/?embed=timeframes&offset=0&limit=' + str(config.page_size)
+    _logger.debug('Gathering Devices for user "%s", url=%s', target_name, url)
+
+    while True:
+
+        # Get the site records
+        response = requests.get(url, auth=config.basic_auth)
+        if response.status_code not in [200, 404]:
+            _log_xm_error(url, response)
+            break
+
+        # Process the responses
+        bodys = response.json()
+        total_devices = bodys['total']
+        if bodys['count'] > 0:
+            _logger.debug('%d Count of %d Total Devices found for User "%s" via url=%s', bodys['count'], bodys['total'], target_name, url)
+            device_list += bodys['data']
+
+        # See if there are any more to get
+        if 'links' in bodys and 'next' in bodys['links']:
+            url = config.xmod_url + bodys['links']['next']
+        else:
+            break
+
+    _logger.debug('Collected %d of a possible %d Devices for User "%s".', len(device_list), total_devices, target_name)
+
+    return device_list
+
+def _get_user(user_id: str, target_name: str):
+    """Attempst to retrieve User by id.
+        
+        If the User exists, retrieve and return the object.
+        If not, return None
+        
+        Args:
+        user_id (str): UUID of User to retrieve
+        target_name (str): targetName field value for the specified user.
+        """
+    _logger.debug("Retrieving User: %s", target_name)
+    
+    # Set our resource URLs
+    url = config.xmod_url + '/api/xm/1/people/' + urllib.parse.quote(user_id) + '?embed=roles,supervisors'
+    _logger.debug('Attempting to retrieve User "%s" via url: %s', target_name, url)
+    
+    # Make the request
+    try:
+        response = requests.get(url, auth=config.basic_auth)
+    except requests.exceptions.RequestException as e:
+        _logger.error(config.ERR_REQUEST_EXCEPTION_CODE, url, repr(e))
+        return None
+    
+    # If the initial response fails, log and return null
+    if response.status_code != 200:
+        _log_xm_error(url, response)
+        return None
+    
+    # Process the response
+    user_obj = response.json()
+    # _logger.debug('Found User "%s" - json body: %s', user_obj['firstName'] + ' ' + user_obj['lastName'], pprint.pformat(user_obj))
+    _logger.debug('Found User "%s" - json body.id: %s', user_obj['firstName'] + ' ' + user_obj['lastName'], user_obj['id'])
+    return user_obj
+
+def _process_users(include_devices: bool):
     """Capture and save the instances User objects
 
     Retrieves the User object records from xMatters and saves them in
     JSON payload format to the output file.
 
     Args:
-        None
+        include_devices (bool): If True, get the User's devices too
 
     Return:
         None
     """
-    pass
+    users_file = _create_out_file(config.users_filename)
+    users_file.write('[\n')
 
-def _process_devices():
-    """Capture and save the instances User's Device objects
+    # Initialize conditions
+    user_objects = []
+    total_users = 0
+    cnt = 0
+    url = config.xmod_url + '/api/xm/1/people?offset=0&limit=' + str(config.page_size)
+    _logger.debug('Gathering Users, url=%s', url)
 
-    Retrieves the User's Device object records from xMatters and saves them in
-    JSON payload format to the output file.
+    while True:
 
-    Args:
-        None
+        # Get the user records
+        response = requests.get(url, auth=config.basic_auth)
+        if response.status_code not in [200, 404]:
+            _log_xm_error(url, response)
+            break
 
-    Return:
-        None
-    """
-    pass
+        # Process the responses
+        bodys = response.json()
+        total_users = bodys['total']
+        if bodys['count'] > 0:
+            _logger.debug("%d Count of %d Total Users found via url=%s", bodys['count'], bodys['total'], url)
+            for body in bodys['data']:
+
+                # Get the full user object, including Roles and Supervisors
+                user_obj = {}
+                a_user = _get_user(body['id'], body['targetName'])
+                if a_user is not None:
+                    user_obj['user'] = a_user
+
+                    # Get the devices, if requested
+                    if include_devices:
+                        user_obj['devices'] = _get_user_devices(a_user['id'], a_user['targetName'])
+
+                    # Save the User
+                    cnt += 1
+                    json.dump(user_obj, users_file)
+                    users_file.write(',\n') if cnt < total_users else users_file.write('\n')
+
+            user_objects += bodys['data']
+
+        # See if there are any more to get
+        if 'links' in bodys and 'next' in bodys['links']:
+            url = config.xmod_url + bodys['links']['next']
+        else:
+            break
+            
+    _logger.debug("Collected %d of a possible %d Users.", len(user_objects), total_users)
+
+    users_file.write(']')
+    users_file.close()
 
 def _process_groups():
     """Capture and save the instances Group objects
@@ -169,13 +284,11 @@ def process(objects_to_process: list):
     if 'sites' in objects_to_process:
         _process_sites()
 
-    # Capture and save the User objects
+    # Capture and save the User objects, and possibly devices
     if 'users' in objects_to_process:
-        _process_users()
-
-    # Capture and save the Device objects
-    if 'devices' in objects_to_process:
-        _process_devices()
+        _process_users('devices' in objects_to_process)
+    elif 'devices' in objects_to_process:
+        _process_users(True)
 
     # Capture and save the Device objects
     if 'groups' in objects_to_process:
