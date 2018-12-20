@@ -21,6 +21,7 @@ import common_logger
 
 _logger = None
 _users = None
+_sites_cache = {}
 
 def _log_xm_error(url, response):
     """Captures and logs errors
@@ -54,6 +55,39 @@ def _create_out_file(filename: str) -> TextIOBase:
     """
     outFile = open(filename, 'w')
     return outFile
+
+def _lookup_site_name(site_id: str):
+    """Retrieves a Site name by ID
+
+    Attempts to find the Site by it's ID in the Site cache,
+    if not found, then retrieve the Site object from xMatters.
+
+    Args:
+        site_id (str): The ID of the site to find
+
+    Return:
+        None
+    """
+    if site_id in _sites_cache:
+        return _sites_cache[site_id]
+    
+    # Site was not in the Cache, so get it from xMatters
+
+    # Initialize conditions
+    url = config.xmod_url + '/api/xm/1/sites/' + site_id
+    _logger.debug('Retrieving Site, url=%s', url)
+
+    # Get the site records
+    response = requests.get(url, auth=config.basic_auth)
+    if response.status_code not in [200, 404]:
+        _log_xm_error(url, response)
+        _sites_cache[site_id] = None
+        return None
+
+    # Process the responses
+    site = response.json()
+    _sites_cache[site['id']] = site['name']
+    return site['name']
 
 def _process_sites():
     """Capture and save the instances Site objects
@@ -94,6 +128,7 @@ def _process_sites():
                 cnt += 1
                 json.dump(body, sites_file)
                 sites_file.write(',\n') if cnt < total_sites else sites_file.write('\n')
+                _sites_cache[body['id']] = body['name']
             site_objects += bodys['data']
 
         # See if there are any more to get
@@ -280,6 +315,11 @@ def _get_group(group_id: str, target_name: str):
     
     # Process the response
     group_obj = response.json()
+    # If present, translate the Site from an ID to a name
+    if 'site' in group_obj:
+        site_name = _lookup_site_name(group_obj['site']['id'])
+        del group_obj['site']
+        group_obj['site'] = site_name
     # _logger.debug(f'Found Group "{group_obj["targetName"]}" - json body: {pprint.pformat(group_obj)}')
     _logger.debug(f'Found Group "{group_obj["targetName"]}" - json body.id: {group_obj["id"]}')
     return group_obj
