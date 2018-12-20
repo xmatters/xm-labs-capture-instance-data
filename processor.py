@@ -22,6 +22,19 @@ import common_logger
 _logger = None
 _users = None
 _sites_cache = {}
+# Holds admin info: company_admins, roles, timezones, country, language
+_admin_objects = None
+
+def _update_admin(a_type: str, a_value: str):
+    """Updates the admin objects set
+        
+    Puts the value into the appropriate set.
+        
+    Args:
+        a_type (str): The name of a set in the admin dict
+        a_value (str): The value to add to the dict
+    """
+    _admin_objects[a_type].add(a_value)
 
 def _log_xm_error(url, response):
     """Captures and logs errors
@@ -101,6 +114,7 @@ def _process_sites():
     Return:
         None
     """
+    _logger.info('Begin Gathering Sites.')
     sites_file = _create_out_file(config.sites_filename)
     sites_file.write('[\n')
 
@@ -109,13 +123,13 @@ def _process_sites():
     total_sites = 0
     cnt = 0
     url = config.xmod_url + '/api/xm/1/sites?offset=0&limit=' + str(config.page_size)
-    _logger.debug('Gathering Sites, url=%s', url)
+    _logger.debug('Gathering Sites via url=%s', url)
 
     while True:
 
         # Get the site records
         response = requests.get(url, auth=config.basic_auth)
-        if response.status_code not in [200, 404]:
+        if response.status_code not in [200]:
             _log_xm_error(url, response)
             break
 
@@ -126,9 +140,14 @@ def _process_sites():
             _logger.debug("%d Count of %d Total Sites found via url=%s", bodys['count'], bodys['total'], url)
             for body in bodys['data']:
                 cnt += 1
+                _logger.info(f'Capturing Site "{body["name"]}"')
                 json.dump(body, sites_file)
                 sites_file.write(',\n') if cnt < total_sites else sites_file.write('\n')
                 _sites_cache[body['id']] = body['name']
+                # Update admin sets
+                if 'language' in body: _update_admin('languages', body['language'])
+                if 'timezone' in body: _update_admin('timezones', body['timezone'])
+                if 'country' in body: _update_admin('countries', body['country'])
             site_objects += bodys['data']
 
         # See if there are any more to get
@@ -137,7 +156,7 @@ def _process_sites():
         else:
             break
             
-    _logger.debug("Collected %d of a possible %d Sites.", len(site_objects), total_sites)
+    _logger.info("Collected %d of a possible %d Sites.", len(site_objects), total_sites)
 
     sites_file.write(']')
     sites_file.close()
@@ -175,6 +194,13 @@ def _get_user_devices(user_id: str, target_name: str):
         if bodys['count'] > 0:
             _logger.debug('%d Count of %d Total Devices found for User "%s" via url=%s', bodys['count'], bodys['total'], target_name, url)
             device_list += bodys['data']
+            # Use Timeframe to update the timezones admin set
+            for body in bodys['data']:
+                if 'timeframes' in body:
+                    for timeframe in body['timeframes']:
+                        if 'timezone' in timeframe: _update_admin('timezones', timeframe['timezone'])
+                _update_admin('devices', body['deviceType'] + '|' + body['name'])
+                if 'provider' in body: _update_admin('usps', body['provider']['id'])
 
         # See if there are any more to get
         if 'links' in bodys and 'next' in bodys['links']:
@@ -196,7 +222,7 @@ def _get_user(user_id: str, target_name: str):
         user_id (str): UUID of User to retrieve
         target_name (str): targetName field value for the specified user.
         """
-    _logger.debug("Retrieving User: %s", target_name)
+    _logger.info(f'Capturing User: "{target_name}".')
     
     # Set our resource URLs
     url = config.xmod_url + '/api/xm/1/people/' + urllib.parse.quote(user_id) + '?embed=roles,supervisors'
@@ -218,6 +244,16 @@ def _get_user(user_id: str, target_name: str):
     user_obj = response.json()
     # _logger.debug('Found User "%s" - json body: %s', user_obj['firstName'] + ' ' + user_obj['lastName'], pprint.pformat(user_obj))
     _logger.debug('Found User "%s" - json body.id: %s', user_obj['firstName'] + ' ' + user_obj['lastName'], user_obj['id'])
+
+    # Update the Admin object
+    if 'language' in user_obj: _update_admin('languages', user_obj['language'])
+    if 'timezone' in user_obj: _update_admin('timezones', user_obj['timezone'])
+    if 'roles' in user_obj and user_obj['roles']['total'] > 0:
+        for role in user_obj['roles']['data']:
+            _update_admin('roles', role['name'])
+            if role['name'] == config.company_admin_role:
+                _update_admin('admins', user_obj['targetName'])
+
     return user_obj
 
 def _process_users(include_devices: bool):
@@ -232,6 +268,7 @@ def _process_users(include_devices: bool):
     Return:
         None
     """
+    _logger.info('Begin gathering Users.')
     users_file = _create_out_file(config.users_filename)
     users_file.write('[\n')
 
@@ -240,7 +277,7 @@ def _process_users(include_devices: bool):
     total_users = 0
     cnt = 0
     url = config.xmod_url + '/api/xm/1/people?offset=0&limit=' + str(config.page_size)
-    _logger.debug('Gathering Users, url=%s', url)
+    _logger.debug('Gathering Users via url=%s', url)
 
     while True:
 
@@ -280,7 +317,7 @@ def _process_users(include_devices: bool):
         else:
             break
             
-    _logger.debug("Collected %d of a possible %d Users.", len(user_objects), total_users)
+    _logger.info("Collected %d of a possible %d Users.", len(user_objects), total_users)
 
     users_file.write(']')
     users_file.close()
@@ -295,7 +332,7 @@ def _get_group(group_id: str, target_name: str):
         group_id (str): UUID of Group to retrieve
         target_name (str): targetName field value for the specified Group.
         """
-    _logger.debug(f"Retrieving Group: {target_name}")
+    _logger.info(f"Retrieving Group: {target_name}")
     
     # Set our resource URLs
     url = config.xmod_url + '/api/xm/1/groups/' + urllib.parse.quote(group_id) + '?embed=supervisors'
@@ -380,6 +417,7 @@ def _process_groups():
     Return:
         None
     """
+    _logger.info('Begin capturing Groups.')
     groups_file = _create_out_file(config.groups_filename)
     groups_file.write('[\n')
 
@@ -388,7 +426,7 @@ def _process_groups():
     total_groups = 0
     cnt = 0
     url = config.xmod_url + '/api/xm/1/groups?offset=0&limit=' + str(config.page_size)
-    _logger.debug('Gathering Groups, url=%s', url)
+    _logger.debug('Gathering Groups via url=%s', url)
 
     while True:
 
@@ -427,10 +465,34 @@ def _process_groups():
         else:
             break
             
-    _logger.debug(f"Collected {len(group_objects)} of a possible {total_groups} Groups.")
+    _logger.info(f"Collected {len(group_objects)} of a possible {total_groups} Groups.")
 
     groups_file.write(']')
     groups_file.close()
+
+def _save_admin_data():
+    """Saves the collected admin sets
+
+    Preservs the collected admin sets to the file system.
+
+    Args:
+        None
+
+    Return:
+        None
+    """
+    admin_dict = {
+        'admins': list(_admin_objects['admins']),
+        'roles': list(_admin_objects['roles']),
+        'timezones': list(_admin_objects['timezones']),
+        'countries': list(_admin_objects['countries']),
+        'languages': list(_admin_objects['languages']),
+        'devices': list(_admin_objects['devices']),
+        'usps': list(_admin_objects['usps'])
+    }
+    admin_file = _create_out_file(config.admin_filename)
+    json.dump(admin_dict, admin_file, indent=2)
+    admin_file.close()
 
 def process(objects_to_process: list):
     """Capture objects for this instance.
@@ -443,10 +505,21 @@ def process(objects_to_process: list):
     Args:
         objects_to_process (list): The list of object types to capture
     """
-    global _logger # pylint: disable=global-statement
+    global _logger, _admin_objects # pylint: disable=global-statement
 
     ### Get the current logger
     _logger = common_logger.get_logger()
+
+    # Initialize the Admin object
+    _admin_objects = {
+        'admins': set(),
+        'roles': set(),
+        'timezones': set(),
+        'countries': set(),
+        'languages': set(),
+        'devices': set(),
+        'usps': set()
+    }
 
     # Capture and save the Site objects
     if 'sites' in objects_to_process:
@@ -461,6 +534,9 @@ def process(objects_to_process: list):
     # Capture and save the Device objects
     if 'groups' in objects_to_process:
         _process_groups()
+
+    # Preserve the collected admin data
+    _save_admin_data()
 
 def main():
     """In case we need to execute the module directly"""

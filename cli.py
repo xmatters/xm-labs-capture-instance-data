@@ -266,6 +266,9 @@ USAGE
         config.groups_filename = (
             config.out_directory + config.dir_sep + config.base_name + '.' +
             config.instance_type + '.groups.' + config.time_str + '.json')
+        config.admin_filename = (
+            config.out_directory + config.dir_sep + config.base_name + '.' +
+            config.instance_type + '.admin.' + config.time_str + '.json')
 
         # Initialize logging
         llogger = common_logger.get_logger()

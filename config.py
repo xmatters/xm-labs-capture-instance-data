@@ -45,6 +45,9 @@ sites_filename = None
 users_filename = None
 devices_filename = None
 groups_filename = None
+company_admin_role = 'Company Admin'
+# Holds admin info: company_admins, roles, timezones, country, language
+admin_filename = None
 
 # Error codes
 ERR_CLI_EXCEPTION = -1
