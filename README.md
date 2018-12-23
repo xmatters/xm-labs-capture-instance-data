@@ -7,7 +7,7 @@ A Python utility to capture as much xMatters Instance data as possible to help i
 * Devices with Timeframes
 * Groups and Shifts
 
-The information is preserved in timestamped files so that you can run this via automation as often as you like.  The file formats are dependent on the type of information, and are in a JSON (JavaScript Object Notation) format.  This makes it easier for recovery.  Then, if a catastropy does happen, you will have the information necessary to recover most of your environment by using the companion [Restore xMatters Instance Data](https://github/xmatters-jolin/xm-labs-restore-instance-data/) Utility.
+The information is preserved in timestamped files so that you can run this via automation as often as you like.  The file formats are dependent on the type of information, and are in a JSON (JavaScript Object Notation) format.  This makes it easier for recovery.  Then, if a catastropy does happen, you will have the information necessary to recover most of your environment by using the companion [Restore xMatters Instance Data](https://github.com/xmatters-jolin/xm-labs-restore-instance-data) Utility.
 
  One important caveat is that an xMatters Instance is also formed based on a set of Administrative Data that is unable to be captured or restored from an automated perspective.  Still, this utility creates a file that lists the Administrative Objects that are in use by the captured data.  These Administrative Objects will need to either already exists in the target environment, or be re-created with the same exact same names (Spelling, capitalization, punctuation):
 
