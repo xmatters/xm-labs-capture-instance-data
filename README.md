@@ -1,34 +1,35 @@
 # Capture xMatters Instance Data (capture-instance-data.py)
+
 A Python utility to capture as much xMatters Instance data as possible to help in recovering from an unforseen catastrophe.  The script currently backs-up the following information:
 
-   * Sites
-   * Users
-   * Devices with Timeframes
-   * Groups and Shifts
+* Sites
+* Users
+* Devices with Timeframes
+* Groups and Shifts
 
 The information is preserved in timestamped files so that you can run this via automation as often as you like.  The file formats are dependent on the type of information, and are in a JSON (JavaScript Object Notation) format.  This makes it easier for recovery.  Then, if a catastropy does happen, you will have the information necessary to recover most of your environment by using the companion [Restore xMatters Instance Data](../xm-labs-restore-instance-data/) Utility.
 
  One important caveat is that an xMatters Instance is also formed based on a set of Administrative Data that is unable to be captured or restored from an automated perspective.  Still, this utility creates a file that lists the Administrative Objects that are in use by the captured data.  These Administrative Objects will need to either already exists in the target environment, or be re-created with the same exact same names (Spelling, capitalization, punctuation):
 
-   * Roles (and their associated Function),
-   * Countrys,
-   * Languages,
-   * Time Zones,
-   * Device Names, and 
-   * User Service Providers (the internal handlers for the various Device Types)
+* Roles (and their associated Function),
+* Countrys,
+* Languages,
+* Time Zones,
+* Device Names, and
+* User Service Providers (the internal handlers for the various Device Types)
 
 This information may be given to xMatters Support, who can help with ensuring that your target environment is ready for recovery.
 
-<kbd>
-  <img src="https://github.com/xmatters/xMatters-Labs/raw/master/media/disclaimer.png">
-</kbd>
+![alt](https://github.com/xmatters/xMatters-Labs/raw/master/media/disclaimer.png)
 
-# Pre-Requisites
+## Pre-Requisites
+
 * [Python 3.7.1](https://www.python.org/downloads/release/python-371/) (I recommend using [pyenv](https://github.com/pyenv/pyenv) to get and manage your python installations)
 * Python [requests](http://docs.python-requests.org/en/master/) module (`pip install requests`)
 * Details for the xMatters instance to be captured (e.g. Non-Production vs Production, URL, a Company Supervisor's User ID and Password, etc.)
 
-# Files
+## Files
+
 * [capture-instance-data.py](capture-instance-data.py) - Main driver/starting point.
 * [config.py](config.py) - Defines the config object used by the program, and error messages
 * [common_logger.py](common_logger.py) - Provides logging capabilities to the utility.
@@ -36,8 +37,10 @@ This information may be given to xMatters Support, who can help with ensuring th
 * [processor.py](processor.py) - The guts of the utility where all of the interactions between the .xlsx file and xMatters occurs
 * [defaults.json](defaults.json) - Example default property settings.  You may override these with command line arguments too.
 
-# How it works
+## How it works
+
 The utility expects several inputs via the command-line (and optionally the defaults file) to get started.  The inputs tell the utility where the information exists, and which specific information you want to have captured:
+
 * `all` - the most common case; captures Sites, Users, Devices (and Timeframes), Groups (and Shifts).
 * `users` - Just Users (but not Devices)
 * `devices` - Just Devices and Timeframes
@@ -45,9 +48,10 @@ The utility expects several inputs via the command-line (and optionally the defa
 
 Upon specifying the inputs, the utility runs until completion as it retrieves the requested data from the source instance, and writes tha informaiton out to your local file system.  The locations of the output files, and their base filename may be specified via the command line or the defauts file too.
 
-# Installation
+## Installation
 
-## Python / pyenv setup
+### Python / pyenv setup
+
 * [Python 3.7.1](https://www.python.org/downloads/release/python-371/) (I recommend using [pyenv](https://github.com/pyenv/pyenv) to get and manage your python installations)
 * After pyenv is installed, go to the directory where you downloaded the files from this repository.
    1. `pyenv install 3.7.1` - Installs Python v3.7.1 into your local system (You only need to do this once)
@@ -57,13 +61,13 @@ Upon specifying the inputs, the utility runs until completion as it retrieves th
    5. `echo 'eval "$(pyenv init -)"' >> ~/.bash_profile` - makes sure Pyenv is initialized whenver you open a Terminal window.
    6. _[Optional]_ `pyenv global 3.7.1` - Sets Python v3.7.1 as your global instance of Python
 * Install the Python [requests](http://docs.python-requests.org/en/master/) module
-   * `pip install requests`
+  * `pip install requests`
 
+### capture-instance-data.py setup
 
-## capture-instance-data.py setup
 All you need to do now is to create an appropriate [defaults.json](defaults.json).  Use the included version for an example:
 
-   ```
+   ```javascript
    {
 
    # Your xMatters base instance's base URL
@@ -100,23 +104,24 @@ All you need to do now is to create an appropriate [defaults.json](defaults.json
    }
    ```
 
+## Running
 
-# Running
-`Run one of these commands:
+Run one of these commands:
+
 * Capture Everything
-   * `python3 capture-instance-data.py -v -c -d defaults.json all`
+  * `python3 capture-instance-data.py -v -c -d defaults.json all`
 * Capture Sites only
-   * `python3 capture-instance-data.py -v -c -d defaults.json sites`
+  * `python3 capture-instance-data.py -v -c -d defaults.json sites`
 * Capture Users only
-   * `python3 capture-instance-data.py -v -c -d defaults.json users`
+  * `python3 capture-instance-data.py -v -c -d defaults.json users`
 * Capture Devices and Timeframes only
-   * `python3 capture-instance-data.py -v -c -d defaults.json devices`
+  * `python3 capture-instance-data.py -v -c -d defaults.json devices`
 * Capture Groups and Shifts only
-   * `python3 capture-instance-data.py -v -c -d defaults.json devices`
+  * `python3 capture-instance-data.py -v -c -d defaults.json devices`
 
+## Usage / Troubleshooting
 
-# Usage / Troubleshooting
-```
+```help
 usage: capture-instance-data.py [-h] [-b BASE_NAME] [-c]
                                 [-d DEFAULTS_FILENAME] [-i {np,prod}]
                                 [-l LOG_FILENAME] [-o OUT_DIRECTORY]
@@ -124,7 +129,6 @@ usage: capture-instance-data.py [-h] [-b BASE_NAME] [-c]
                                 [-x XMOD_URL]
                                 {sites,users,devices,groups,all} ...
 
-    
 
   Created by jolin@xmatters.com on 2018-12-13.
   Copyright 2018 xmatters, Inc. All rights reserved.
@@ -191,6 +195,6 @@ optional arguments:
 ```
 
 * You can add multiple "v"'s to the -v command line option.  
-   * A single "-v" means only show errors and warnings
-   * A double "-vv" means to show errors, warnings, and info statements
-   * A tripple "-vvv" means to show errors, warnings, info, and debug statements
+  * A single "-v" means only show errors and warnings
+  * A double "-vv" means to show errors, warnings, and info statements
+  * A tripple "-vvv" means to show errors, warnings, info, and debug statements
