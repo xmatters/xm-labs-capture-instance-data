@@ -67,10 +67,10 @@ Upon specifying the inputs, the utility runs until completion as it retrieves th
 
 All you need to do now is to create an appropriate [defaults.json](defaults.json).  Use the included version for an example:
 
-   ```javascript
+   ```JSON
    {
 
-   # Your xMatters base instance's base URL
+   # Your xMatters base instances base URL
    "xmodURL": "https://<mycompany>.<myserver>.xmatters.com",
 
    # An xMatters User ID with the "Company Supervisor" Role
