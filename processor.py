@@ -13,8 +13,6 @@ import urllib.parse
 
 import requests
 from requests.auth import HTTPBasicAuth
-from openpyxl import Workbook, load_workbook
-from openpyxl.utils import get_column_letter, column_index_from_string
 
 import config
 import common_logger

@@ -7,7 +7,7 @@ A Python utility to capture as much xMatters Instance data as possible to help i
 * Devices with Timeframes
 * Groups and Shifts
 
-The information is preserved in timestamped files so that you can run this via automation as often as you like.  The file formats are dependent on the type of information, and are in a JSON (JavaScript Object Notation) format.  This makes it easier for recovery.  Then, if a catastropy does happen, you will have the information necessary to recover most of your environment by using the companion [Restore xMatters Instance Data](../xm-labs-restore-instance-data/) Utility.
+The information is preserved in timestamped files so that you can run this via automation as often as you like.  The file formats are dependent on the type of information, and are in a JSON (JavaScript Object Notation) format.  This makes it easier for recovery.  Then, if a catastropy does happen, you will have the information necessary to recover most of your environment by using the companion [Restore xMatters Instance Data](https://github/xmatters-jolin/xm-labs-restore-instance-data/) Utility.
 
  One important caveat is that an xMatters Instance is also formed based on a set of Administrative Data that is unable to be captured or restored from an automated perspective.  Still, this utility creates a file that lists the Administrative Objects that are in use by the captured data.  These Administrative Objects will need to either already exists in the target environment, or be re-created with the same exact same names (Spelling, capitalization, punctuation):
 
@@ -34,7 +34,7 @@ This information may be given to xMatters Support, who can help with ensuring th
 * [config.py](config.py) - Defines the config object used by the program, and error messages
 * [common_logger.py](common_logger.py) - Provides logging capabilities to the utility.
 * [cli.py](cli.py) - The Command Line processor that handles dealing with command line arguments, as well as rading the defaults.json file.
-* [processor.py](processor.py) - The guts of the utility where all of the interactions between the .xlsx file and xMatters occurs
+* [processor.py](processor.py) - The guts of the utility where all of the interactions from xMatters to the local file system occurs.
 * [defaults.json](defaults.json) - Example default property settings.  You may override these with command line arguments too.
 
 ## How it works
@@ -42,6 +42,7 @@ This information may be given to xMatters Support, who can help with ensuring th
 The utility expects several inputs via the command-line (and optionally the defaults file) to get started.  The inputs tell the utility where the information exists, and which specific information you want to have captured:
 
 * `all` - the most common case; captures Sites, Users, Devices (and Timeframes), Groups (and Shifts).
+* `sites` - Just Sites (but not Devices)
 * `users` - Just Users (but not Devices)
 * `devices` - Just Devices and Timeframes
 * `groups` - Just Groups and Shifts
