@@ -70,36 +70,37 @@ All you need to do now is to create an appropriate [defaults.json](defaults.json
    ```JSON
    {
 
-   # Your xMatters base instances base URL
+   // Your xMatters base instances base URL
    "xmodURL": "https://<mycompany>.<myserver>.xmatters.com",
 
-   # An xMatters User ID with the "Company Supervisor" Role
+   // An xMatters User ID with the "Company Supervisor" Role
    "user": "MyUser",
 
-   # The User's Password
+   // The User's Password
    "password": "MyPassword",
 
-   # The directory to place output and log files
-   # (the default is the current directory)
+   // The directory to place output and log files
+   // (the default is the current directory)
    "outDirectory": ".",
 
-   # The character used between directory paths.
-   # (change to "/" for Windows)
+   // The character used between directory paths.
+   // (change to \ for Windows)
    "dirSep": "/",
 
-   # The base part of the file name to use for captured data
-   # e.g. "catured-data"
+   // The base part of the file name to use for captured data
+   // e.g. "catured-data"
    "baseName": "BASE-FILE-NAME-FOR-CAPTURED-DATA",
 
-   # The base part of the file name to use for runtime logging
-   # e.g. "catured-data-logging"
+   // The base part of the file name to use for runtime logging
+   // e.g. "catured-data-logging"
    "logFilename": "capture-instance-data-results",
 
-   # Corresponds to the level of details you want in the log file
-   # (0=only errors, 1=only warnings, 2=info)
+   // Corresponds to the level of details you want in the log file
+   // (0=only errors, 1=only warnings, 2=info)
    "verbosity": 0,
 
-   # Identifies whether the captured informatoin is from your # Non-Production or Production instance
+   // Identifies whether the captured information is from your
+   // Non-Production or Production instance
    "instance":  "np|prod"
    }
    ```
@@ -110,14 +111,41 @@ Run one of these commands:
 
 * Capture Everything
   * `python3 capture-instance-data.py -v -c -d defaults.json all`
+  * Example Output Filenames:
+    * my-instance.np.admin.20181220-0307.json
+    * my-instance.np.sites.20181220-0307.json
+    * my-instance.np.users.20181220-0307.json
+    * my-instance.np.groups.20181220-0307.json
+    * my-instance.np.capture-results.20181220-0307.log
+
 * Capture Sites only
   * `python3 capture-instance-data.py -v -c -d defaults.json sites`
+  * Example Output Filenames:
+    * my-instance.np.admin.20181220-0307.json
+    * my-instance.np.sites.20181220-0307.json
+    * my-instance.np.capture-results.20181220-0307.log
+
 * Capture Users only
   * `python3 capture-instance-data.py -v -c -d defaults.json users`
+  * Example Output Filenames:
+    * my-instance.np.admin.20181220-0307.json
+    * my-instance.np.users.20181220-0307.json
+    * my-instance.np.capture-results.20181220-0307.log
+
 * Capture Devices and Timeframes only
   * `python3 capture-instance-data.py -v -c -d defaults.json devices`
+  * Example Output Filenames:
+    * my-instance.np.admin.20181220-0307.json
+    * my-instance.np.users.20181220-0307.json
+      * Users file contains Devices and Timeframes too
+    * my-instance.np.capture-results.20181220-0307.log
+
 * Capture Groups and Shifts only
-  * `python3 capture-instance-data.py -v -c -d defaults.json devices`
+  * `python3 capture-instance-data.py -v -c -d defaults.json groups`
+  * Example Output Filenames:
+    * my-instance.np.admin.20181220-0307.json
+    * my-instance.np.groups.20181220-0307.json
+    * my-instance.np.capture-results.20181220-0307.log
 
 ## Usage / Troubleshooting
 
