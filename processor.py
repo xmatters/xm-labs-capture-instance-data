@@ -375,7 +375,7 @@ def _get_group_shifts(group_id: str, target_name: str):
     # Initialize conditions
     shift_list = []
     total_shifts = 0
-    url = config.xmod_url + '/api/xm/1/groups/' + group_id + '/shifts/?embed=members&offset=0&limit=' + str(config.page_size)
+    url = config.xmod_url + '/api/xm/1/groups/' + group_id + '/shifts/?embed=members,rotation&offset=0&limit=' + str(config.page_size)
     _logger.debug(f'Gathering Shifts for Group "{target_name}", url={url}')
 
     while True:
