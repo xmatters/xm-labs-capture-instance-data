@@ -119,7 +119,7 @@ USAGE
                                 "Specifes the name of the file containing "
                                 "default settings [default: %(default)s]"))
         parser.add_argument("-i", "--itype", dest="instance_type",
-                            default="np",
+                            default=None,
                             choices=['np', 'prod'],
                             help=(
                                   "Specifies whether we are updating the "
@@ -245,6 +245,13 @@ USAGE
                 config.verbosity = cfg['verbosity']
         if config.instance_type is None and 'instance' in cfg:
             config.instance_type = cfg['instance']
+
+        # Validate and default instance type to non production
+        if config.instance_type is None:
+            config.instance_type = 'np'
+        if config.instance_type not in ['prod', 'np']:
+            raise ValueError('Input must be either "prod" or "np"')
+
         config.non_prod = True if config.instance_type == 'np' else False
         config.command_name = args.command_name
 
@@ -252,7 +259,7 @@ USAGE
         if config.log_filename:
             config.log_filename = (
                 config.out_directory + config.dir_sep + config.base_name +
-                '.' + config.instance_type + '.' + config.log_filename + 
+                '.' + config.instance_type + '.' + config.log_filename +
                 '.' + config.time_str + '.log')
         config.sites_filename = (
             config.out_directory + config.dir_sep + config.base_name + '.' +
