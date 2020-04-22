@@ -27,7 +27,7 @@ This information may be given to xMatters Support, who can help with ensuring th
 
 * [Python 3.7.1](https://www.python.org/downloads/release/python-371/) (I recommend using [pyenv](https://github.com/pyenv/pyenv) to get and manage your python installations)
 * Python [requests](http://docs.python-requests.org/en/master/) module (`pip install requests`)
-* Details for the xMatters instance to be captured (e.g. Non-Production vs Production, URL, a Company Supervisor's User ID and Password, etc.)
+* Details for the xMatters instance to be captured (e.g. Non-Production vs Production, URL, a Company Supervisor's API Key and Secret, etc.)
 
 ## Files
 
@@ -69,7 +69,9 @@ Upon specifying the inputs, the utility runs until completion as it retrieves th
 
 All you need to do now is to create an appropriate [defaults.json](defaults.json).  Use the included version for an example:
 
-   ```text
+In place of `user` and `password`, it is recommended to generate an [API Key and Secret)[https://help.xmatters.com/ondemand/user/apikeys.htm] and use those in place of the user and password. The key inherits the roles associated with the user who generated it. 
+
+```text
    {
 
    // Your xMatters base instances base URL
@@ -105,7 +107,7 @@ All you need to do now is to create an appropriate [defaults.json](defaults.json
    // Non-Production or Production instance
    "instance":  "np|prod"
    }
-   ```
+```
 
 ## Running
 
