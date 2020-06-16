@@ -2,6 +2,9 @@
 
 A Python utility to capture as much xMatters Instance data as possible to help in recovering from an unforseen catastrophe.  The script currently backs-up the following information:
 
+**Note**: This has beeen superseeded by the [xmtoolbox](https://github.com/xmatters/xmtoolbox-quick-start) 
+
+
 * Sites
 * Users
 * Devices with Timeframes
@@ -21,7 +24,11 @@ The information is preserved in timestamped files so that you can run this via a
 
 This information may be given to xMatters Support, who can help with ensuring that your target environment is ready for recovery.
 
-![alt](https://github.com/xmatters/xMatters-Labs/raw/master/media/disclaimer.png)
+<kbd>
+<a href="https://support.xmatters.com/hc/en-us/community/topics">
+   <img src="https://github.com/xmatters/xMatters-Labs/raw/master/media/disclaimer.png">
+</a>
+</kbd>
 
 ## Pre-Requisites
 
