@@ -2,14 +2,14 @@
 
 A Python utility to capture as much xMatters Instance data as possible to help in recovering from an unforseen catastrophe.  The script currently backs-up the following information:
 
-**Note**: This has beeen superseeded by the [xmtoolbox](https://github.com/xmatters/xmtoolbox-quick-start) 
-
-
 * Sites
 * Users
 * Devices with Timeframes
 * Groups and Shifts
   * **Caveat**: Group Observers are not able to be captured at this time.  Once the xMatters [`Get a group xM API`](https://help.xmatters.com/xmapi/index.html#get-a-group) and [`Create a group xM API`](https://help.xmatters.com/xmapi/index.html#create-a-group) can handle capturing and restoring those values, we can include them.
+
+**Note**: This has beeen superseeded by the [xmtoolbox](https://github.com/xmatters/xmtoolbox-quick-start) 
+
 
 The information is preserved in timestamped files so that you can run this via automation as often as you like.  The file formats are dependent on the type of information, and are in a JSON (JavaScript Object Notation) format.  This makes it easier for recovery.  Then, if a catastropy does happen, you will have the information necessary to recover most of your environment by using the companion [Restore xMatters Instance Data](https://github.com/xmatters/xm-labs-restore-instance-data) Utility.
 
